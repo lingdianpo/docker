@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  rocketmq-namesrv:
+    image: apache/rocketmq:4.9.7
+    container_name: rocketmq-namesrv
+    ports:
+      - "9876:9876"
+    environment:
+      - MAX_HEAP_SIZE=256m
+    command: sh mqnamesrv
+    networks:
+      - rocketmq-net
+    restart: unless-stopped
+
+  rocketmq-broker:
+    image: apache/rocketmq:4.9.7
+    container_name: rocketmq-broker
+    ports:
+      - "10911:10911"
+      - "10909:10909"
+    volumes:
+      - ./data/broker/logs:/home/rocketmq/logs
+      - ./data/broker/store:/home/rocketmq/store
+      - ./conf:/home/rocketmq/rocketmq-4.9.7/conf
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv:9876
+      - JAVA_OPT_EXT=-server -Xms512m -Xmx512m -Xmn512m
+      - BROKER_CLUSTER_NAME=DefaultCluster
+      - BROKER_NAME=broker-a
+    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/rocketmq-4.9.7/conf/broker.conf
+    networks:
+      - rocketmq-net
+    depends_on:
+      - rocketmq-namesrv
+    restart: unless-stopped
+
+  rocketmq-dashboard:
+    image: apacherocketmq/rocketmq-dashboard:1.0.0
+    container_name: rocketmq-dashboard
+    ports:
+      - "8082:8080"
+    environment:
+      - JAVA_OPTS=-Drocketmq.namesrv.addr=rocketmq-namesrv:9876
+    networks:
+      - rocketmq-net
+    depends_on:
+      - rocketmq-namesrv
+    restart: unless-stopped
+
+networks:
+  rocketmq-net:
+    driver: bridge

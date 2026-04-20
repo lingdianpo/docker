@@ -5,6 +5,8 @@
     sudo sh get-docker.sh
 
 #### 设置国内镜像
+
+
     sudo mkdir -p /etc/docker
     sudo tee /etc/docker/daemon.json <<-'EOF'
     {
@@ -13,6 +15,17 @@
     EOF
     sudo systemctl daemon-reload
     sudo systemctl restart docker
+
+    实在不行 使用下面的
+    {
+      "registry-mirrors": [
+        "https://docker.nju.edu.cn",
+        "https://docker.m.daocloud.io",
+        "https://dockerproxy.com",
+        "https://docker.mirrors.sjtug.sjtu.edu.cn"
+      ]
+    }
+
 
 
 
